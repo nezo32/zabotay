@@ -1,0 +1,27 @@
+@import "./font.scss";
+
+.app {
+  background: #f5f6fa;
+
+  min-height: 100vh;
+}
+
+.viewpoint {
+  margin: 0 auto;
+  padding-top: 20px;
+  max-width: 1290px;
+}
+
+body {
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: white;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #303030;
+  }
+}
