@@ -6,9 +6,9 @@
         <span class="is-size-4">Дополнительная информация</span>
       </div>
     </div>
-    <div class="home__body">
+    <div class="home__body" ref="bodyContent">
       <div class="home__body__content">
-        <span v-for="i in 12" class="is-size-5" :key="i"
+        <span v-for="i in 50" class="is-size-5" :key="i"
           >Lorem ipsum dolor sit, amet consectetur adipisicing elit. Placeat sit
           architecto molestiae perferendis temporibus quis, maxime sint cumque
           quidem libero asperiores quibusdam delectus similique eius voluptate
@@ -17,6 +17,8 @@
       </div>
       <div class="home__body__content" style="flex-shrink: 0">
         <TaskComponent
+          :width="width"
+          :height="height"
           img-url="https://ru-static.z-dn.net/files/d70/b2d7e6a8f30660b99d6d09f2520841d9.jpg"
         />
       </div>
@@ -26,6 +28,18 @@
 
 <script setup lang="ts">
 import TaskComponent from "@/components/TaskComponent.vue";
+import { ref, onMounted } from "vue";
+
+const bodyContent = ref<HTMLElement>();
+
+const width = ref(0);
+const height = ref(0);
+
+onMounted(() => {
+  if (!bodyContent.value) return;
+  width.value = bodyContent.value.clientWidth;
+  height.value = 720;
+});
 </script>
 
 <style scoped lang="scss">
