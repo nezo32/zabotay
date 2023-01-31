@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="modal has-text-dark" v-if="modalActive">
+    <div class="modal has-text-dark" ref="modal">
       <div class="modal__inner">
         <slot />
         <div
@@ -16,18 +16,20 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 defineProps<{ modalActive?: boolean }>();
 defineEmits(["update:modalActive"]);
 
+const modal = ref();
+
 onMounted(() => {
-  const app = document.getElementById("app");
-  if (app) app.style.overflow = "hidden";
+  document.getElementsByTagName("html")[0].style.overflow = "hidden";
+  document.getElementsByTagName("html")[0].style.marginRight = "5px";
 });
 onUnmounted(() => {
-  const app = document.getElementById("app");
-  if (app) app.style.overflow = "auto";
+  document.getElementsByTagName("html")[0].style.overflow = "auto";
+  document.getElementsByTagName("html")[0].style.marginRight = "0px";
 });
 </script>
 
