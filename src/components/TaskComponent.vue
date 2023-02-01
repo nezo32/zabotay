@@ -219,13 +219,13 @@ clickOutsideElement(eraserContainer, () => {
       > button {
         cursor: pointer;
         position: absolute;
-        z-index: 4;
+        z-index: 6;
         bottom: 10px;
         right: 10px;
       }
 
       &__toolbar {
-        z-index: 4;
+        z-index: 6;
         width: fit-content;
         &__wrapper {
           display: flex;

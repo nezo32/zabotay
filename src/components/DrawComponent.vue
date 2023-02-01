@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="container"
     class="draw"
     :class="{
       draw: props.choose == 'brush',
@@ -8,6 +9,9 @@
       line: props.choose == 'line',
       eraser: props.choose == 'eraser',
     }"
+    @mousedown="dragDown"
+    @mousemove="dragMove"
+    @mouseup="dragUp"
   >
     <canvas
       ref="workspaceBack"
@@ -55,6 +59,8 @@ const deleteValue = computed({
 const w = computed(() => `${props.width}px`);
 const h = computed(() => `${props.height}px`);
 
+const container = ref<HTMLElement>();
+
 const workspace = ref<HTMLCanvasElement>();
 const workspaceBack = ref<HTMLCanvasElement>();
 const ctx = ref<CanvasRenderingContext2D | null>(null);
@@ -67,8 +73,11 @@ const color = computed(() => props.color || "black");
 const thiccBrush = computed(() => props.brushWidth || 2);
 const thiccEraser = computed(() => props.eraserWidth || 2);
 
+const dragging = ref(false);
+
 const drawing = ref(false);
 const line = ref(false);
+const text = ref(false);
 
 const startX = ref(0);
 const startY = ref(0);
@@ -80,6 +89,20 @@ function onMouseDown(e: MouseEvent) {
     line.value = true;
     startX.value = e.clientX - offsetX.value;
     startY.value = e.clientY - offsetY.value;
+  }
+  if (props.choose == "text") {
+    if (!container.value) return;
+    if ((e.target as HTMLElement).tagName == "INPUT") return;
+    text.value = true;
+    startX.value = e.clientX - offsetX.value;
+    startY.value = e.clientY - offsetY.value;
+    const tmpElement = document.createElement("input");
+    tmpElement.className = "draggable__input";
+    tmpElement.style.position = "absolute";
+    tmpElement.style.top = `${startY.value}px`;
+    tmpElement.style.left = `${startX.value}px`;
+    tmpElement.placeholder = "Введите текст";
+    container.value.appendChild(tmpElement);
   }
   if (!ctx.value) return;
 }
@@ -121,10 +144,48 @@ function onMouseMove(e: MouseEvent) {
   if (props.choose != "line") ctx.value.stroke();
 }
 
+const currentInput = ref<HTMLInputElement>();
+
+function dragDown(e: MouseEvent) {
+  if (
+    (e.target as HTMLElement).tagName == "INPUT" &&
+    props.choose == "cursor"
+  ) {
+    dragging.value = true;
+    currentInput.value = e.target as HTMLInputElement;
+    currentInput.value.disabled = true;
+  }
+}
+function dragMove(e: MouseEvent) {
+  if (!currentInput.value) return;
+  if (dragging.value) {
+    currentInput.value.style.top = `${e.clientY - offsetY.value}px`;
+    currentInput.value.style.left = `${e.clientX - offsetX.value}px`;
+  }
+}
+function dragUp() {
+  if (!currentInput.value) return;
+  dragging.value = false;
+  currentInput.value.disabled = false;
+}
+
+document.addEventListener("keydown", (el: KeyboardEvent) => {
+  if (
+    currentInput.value &&
+    (el.key == "Delete" || el.key == "Backspace") &&
+    props.choose == "cursor"
+  ) {
+    currentInput.value.remove();
+  }
+});
+
 watch(deleteValue, (n) => {
   if (n && ctx.value && workspace.value) {
     deleteValue.value = false;
     ctx.value.clearRect(0, 0, workspace.value.width, workspace.value.height);
+    [...document.getElementsByClassName("draggable__input")].map(
+      (el) => el && el.remove()
+    );
   }
 });
 
@@ -151,8 +212,22 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .draw {
+  .draggable__input {
+    z-index: 4;
+    padding: 5px;
+    outline: none;
+    &:hover {
+      border: 1px solid black;
+    }
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 120%;
+  }
+
   &.draw {
     cursor: cell;
   }
