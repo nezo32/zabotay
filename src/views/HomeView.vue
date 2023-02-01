@@ -8,12 +8,12 @@
     </div>
     <div class="home__body" ref="bodyContent">
       <div class="home__body__content">
-        <span v-for="i in 50" class="is-size-5" :key="i"
+        <span v-for="i in 20" class="is-size-5" :key="i"
           >Lorem ipsum dolor sit, amet consectetur adipisicing elit. Placeat sit
           architecto molestiae perferendis temporibus quis, maxime sint cumque
           quidem libero asperiores quibusdam delectus similique eius voluptate
-          praesentium illum quas porro?</span
-        >
+          praesentium illum quas porro?<br
+        /></span>
       </div>
       <div class="home__body__content" style="flex-shrink: 0">
         <TaskComponent

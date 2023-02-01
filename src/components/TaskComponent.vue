@@ -13,47 +13,118 @@
         </button>
         <div class="task__container__inner__toolbar">
           <div class="task__container__inner__toolbar__wrapper">
-            <button class="has-text-dark is-primary button">
-              <PaletteIcon />
-              <div class="palette">
-                <!--eslint-disable-next-line prettier/prettier-->
+            <button
+              class="has-text-dark is-primary button"
+              ref="paletteContainer"
+            >
+              <PaletteIcon @click="paletteActive = !paletteActive" />
+              <div class="palette" v-if="paletteActive">
                 <span
-                  v-for="i in 4"
+                  class="is-size-6"
+                  v-for="(v, i) of colors"
                   :key="i"
-                  :class="{
-                    black: i == 1,
-                    blue: i == 2,
-                    red: i == 3,
-                    green: i == 4,
-                  }"
-                ></span>
+                  @click="
+                    color = v;
+                    paletteActive = false;
+                  "
+                  :class="{ active: v == color }"
+                >
+                  {{ v }}
+                </span>
+              </div>
+            </button>
+            <button
+              class="has-text-dark is-primary button"
+              ref="brushContainer"
+            >
+              <BrushIcon
+                @click="
+                  choose = 'brush';
+                  brushActive = !brushActive;
+                "
+              />
+              <div class="brush" v-if="brushActive">
+                <span
+                  class="is-size-6"
+                  v-for="(v, i) of widths"
+                  :key="i"
+                  @click="
+                    widthBrush = v;
+                    brushActive = false;
+                  "
+                  :class="{ active: v == widthBrush }"
+                >
+                  <p>{{ v }}</p>
+                </span>
+              </div>
+            </button>
+            <button class="has-text-dark is-primary button" ref="textContainer">
+              <TextIcon @click="choose = 'text'" />
+            </button>
+            <button class="has-text-dark is-primary button">
+              <DeleteIcon @click="deleteActive = true" />
+            </button>
+            <button class="has-text-dark is-primary button" ref="lineContainer">
+              <ArrowIcon
+                @click="
+                  choose = 'line';
+                  lineActive = !lineActive;
+                "
+              />
+              <div class="arrow" v-if="lineActive">
+                <span
+                  class="is-size-6"
+                  v-for="(v, i) of widths"
+                  :key="i"
+                  @click="
+                    widthBrush = v;
+                    lineActive = false;
+                  "
+                  :class="{ active: v == widthBrush }"
+                >
+                  <p>{{ v }}</p>
+                </span>
               </div>
             </button>
             <button class="has-text-dark is-primary button">
-              <BrushIcon />
+              <CursorIcon @click="choose = 'cursor'" />
             </button>
-            <button class="has-text-dark is-primary button">
-              <TextIcon />
-            </button>
-            <button class="has-text-dark is-primary button">
-              <DeleteIcon />
-            </button>
-            <button class="has-text-dark is-primary button">
-              <ArrowIcon />
-            </button>
-            <button class="has-text-dark is-primary button">
-              <CursorIcon />
-            </button>
-            <button class="has-text-dark is-primary button">
-              <EraserIcon />
+            <button
+              class="has-text-dark is-primary button"
+              ref="eraserContainer"
+            >
+              <EraserIcon
+                @click="
+                  choose = 'eraser';
+                  eraserActive = !eraserActive;
+                "
+              />
+              <div class="eraser" v-if="eraserActive">
+                <span
+                  class="is-size-6"
+                  v-for="(v, i) of widths"
+                  :key="i"
+                  @click="
+                    widthEraser = v;
+                    eraserActive = false;
+                  "
+                  :class="{ active: v == widthEraser }"
+                >
+                  {{ v }}
+                </span>
+              </div>
             </button>
           </div>
         </div>
         <DrawComponent
+          :choose="choose"
           :color="color"
           :img-url="imgUrl"
           :width="props.width"
           :height="props.height"
+          :brush-width="widthBrush"
+          :eraser-width="widthEraser"
+          v-model:delete="deleteActive"
         />
       </div>
     </div>
@@ -70,16 +141,59 @@ import ArrowIcon from "./icons/ArrowIcon.vue";
 import CursorIcon from "./icons/CursorIcon.vue";
 import EraserIcon from "./icons/EraserIcon.vue";
 import { ref } from "vue";
+import { clickOutsideElement } from "../clickOutsideElement";
+
+const paletteContainer = ref();
+const brushContainer = ref();
+const textContainer = ref();
+const lineContainer = ref();
+const eraserContainer = ref();
+
+const choose = ref<"brush" | "eraser" | "line" | "text" | "cursor" | "cursor">(
+  "brush"
+);
 
 const props = defineProps<{ imgUrl?: string; width: number; height: number }>();
 
-const color = ref<"black" | "green" | "red" | "blue">("black");
+const paletteActive = ref(false);
+const brushActive = ref(false);
+const textActive = ref(false);
+const deleteActive = ref(false);
+const lineActive = ref(false);
+const cursorActive = ref(false);
+const eraserActive = ref(false);
+
+const colors = ref(["black", "green", "red", "blue"] as const);
+type Colors = (typeof colors.value)[number];
+
+const widths = ref([2, 4, 6, 8, 10, 12, 20, 48] as const);
+type Widths = (typeof widths.value)[number];
+
+const color = ref<Colors>("black");
+const widthBrush = ref<Widths>(2);
+const widthEraser = ref<Widths>(2);
 
 const urlPlaceholder = ref(
   props.imgUrl ||
     "https://otkrit-ka.ru/uploads/posts/2021-11/krasivye-foto-kartinki-znak-voprosa-39.jpg"
 );
 const workspaceActive = ref(false);
+
+clickOutsideElement(paletteContainer, () => {
+  paletteActive.value = false;
+});
+clickOutsideElement(brushContainer, () => {
+  brushActive.value = false;
+});
+clickOutsideElement(textContainer, () => {
+  textActive.value = false;
+});
+clickOutsideElement(lineContainer, () => {
+  lineActive.value = false;
+});
+clickOutsideElement(eraserContainer, () => {
+  eraserActive.value = false;
+});
 </script>
 
 <style scoped lang="scss">
@@ -103,12 +217,15 @@ const workspaceActive = ref(false);
       position: relative;
 
       > button {
+        cursor: pointer;
         position: absolute;
+        z-index: 4;
         bottom: 10px;
         right: 10px;
       }
 
       &__toolbar {
+        z-index: 4;
         width: fit-content;
         &__wrapper {
           display: flex;
@@ -117,23 +234,44 @@ const workspaceActive = ref(false);
           gap: 5px;
 
           > button {
+            cursor: pointer;
             position: relative;
             height: fit-content;
             padding: 0;
 
-            .palette {
+            > div {
+              border-radius: 10px;
+              background: #f5f6fa;
+              padding: 10px;
+
               z-index: 98;
               position: absolute;
-              top: 15px;
-              left: 0;
+              bottom: 65px;
+              right: 0;
+
+              display: flex;
+              flex-direction: column;
+              gap: 5px;
+              > span.active {
+                color: rgb(80, 80, 80);
+                border-radius: 5px;
+                background: hsl(44deg, 100%, 77%) !important;
+              }
 
               > span {
-                width: 10px;
-                height: 10px;
-
-                &.black {
-                  background-color: black;
+                &:hover {
+                  color: white;
+                  background: hsl(171deg, 100%, 41%);
+                  border-radius: 5px;
                 }
+                padding: 2px 5px;
+                text-align: start;
+                > p {
+                  width: 100%;
+                  text-align: start;
+                }
+                width: 100%;
+                min-width: 35px;
               }
             }
             /* outline: none;
