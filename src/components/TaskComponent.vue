@@ -2,6 +2,7 @@
   <div class="task has-text-dark">
     <div class="task__image" @click="workspaceActive = !workspaceActive">
       <img :src="urlPlaceholder" alt="task" />
+      <span class="is-size-6">Открыть рабочее пространство</span>
     </div>
     <div class="task__container" v-if="workspaceActive">
       <div class="task__container__inner">
@@ -201,8 +202,17 @@ clickOutsideElement(eraserContainer, () => {
   position: relative;
 
   &__image {
+    padding: 20px;
+    background: white;
+    border-radius: 20px;
+    position: relative;
     > img {
       width: 300px;
+    }
+    > span {
+      position: absolute;
+      bottom: -10px;
+      right: 2px;
     }
   }
 

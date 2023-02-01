@@ -37,7 +37,7 @@ const height = ref(0);
 
 onMounted(() => {
   if (!bodyContent.value) return;
-  width.value = bodyContent.value.clientWidth;
+  width.value = bodyContent.value.clientWidth - 40;
   height.value = 720;
 });
 </script>
@@ -48,12 +48,24 @@ onMounted(() => {
   flex-direction: column;
   gap: 30px;
 
+  &__header {
+    &__inner {
+      border-radius: 20px;
+    }
+  }
+
   &__body {
     height: max-content;
     display: flex;
     flex-direction: row;
     gap: 10px;
     &__content {
+      padding: 20px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 0.5em 1em -0.125em rgb(10 10 10 / 10%),
+        0 0px 0 1px rgb(10 10 10 / 2%);
+      height: fit-content;
       > img {
         width: 300px;
       }

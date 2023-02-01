@@ -201,7 +201,7 @@ onMounted(() => {
   const task = new Image();
   task.src = props.imgUrl!;
   const ratio = task.width / task.height;
-  ctxBack.value.drawImage(task, 0, 0, 250, 250 / ratio);
+  ctxBack.value.drawImage(task, 0, 0, 300, 300 / ratio);
 
   const bounding = workspace.value.getBoundingClientRect();
   offsetX.value = bounding.left;
