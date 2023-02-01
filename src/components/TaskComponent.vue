@@ -13,7 +13,16 @@
           Назад
         </button>
         <div class="task__container__inner__toolbar">
-          <div class="task__container__inner__toolbar__wrapper">
+          <div
+            class="task__container__inner__toolbar__openner button is-primary"
+            @click="openToolbar = !openToolbar"
+          >
+            <ExpandIcon :up="openToolbar" />
+          </div>
+          <div
+            class="task__container__inner__toolbar__wrapper"
+            v-if="openToolbar"
+          >
             <button
               class="has-text-dark is-primary button"
               ref="paletteContainer"
@@ -78,10 +87,35 @@
                   v-for="(v, i) of widths"
                   :key="i"
                   @click="
-                    widthBrush = v;
+                    widthLine = v;
                     lineActive = false;
                   "
-                  :class="{ active: v == widthBrush }"
+                  :class="{ active: v == widthLine }"
+                >
+                  <p>{{ v }}</p>
+                </span>
+              </div>
+            </button>
+            <button
+              class="has-text-dark is-primary button"
+              ref="arrowContainer"
+            >
+              <LineIcon
+                @click="
+                  choose = 'arrow';
+                  arrowActive = !arrowActive;
+                "
+              />
+              <div class="arrow" v-if="arrowActive">
+                <span
+                  class="is-size-6"
+                  v-for="(v, i) of widths"
+                  :key="i"
+                  @click="
+                    widthArrow = v;
+                    arrowActive = false;
+                  "
+                  :class="{ active: v == widthArrow }"
                 >
                   <p>{{ v }}</p>
                 </span>
@@ -125,6 +159,8 @@
           :height="props.height"
           :brush-width="widthBrush"
           :eraser-width="widthEraser"
+          :arrow-width="widthArrow"
+          :line-width="widthLine"
           v-model:delete="deleteActive"
         />
       </div>
@@ -143,16 +179,19 @@ import CursorIcon from "./icons/CursorIcon.vue";
 import EraserIcon from "./icons/EraserIcon.vue";
 import { ref } from "vue";
 import { clickOutsideElement } from "../clickOutsideElement";
+import ExpandIcon from "./icons/ExpandIcon.vue";
+import LineIcon from "./icons/LineIcon.vue";
 
 const paletteContainer = ref();
 const brushContainer = ref();
 const textContainer = ref();
 const lineContainer = ref();
 const eraserContainer = ref();
+const arrowContainer = ref();
 
-const choose = ref<"brush" | "eraser" | "line" | "text" | "cursor" | "cursor">(
-  "brush"
-);
+const choose = ref<
+  "brush" | "eraser" | "line" | "text" | "cursor" | "cursor" | "arrow"
+>("brush");
 
 const props = defineProps<{ imgUrl?: string; width: number; height: number }>();
 
@@ -161,8 +200,11 @@ const brushActive = ref(false);
 const textActive = ref(false);
 const deleteActive = ref(false);
 const lineActive = ref(false);
+const arrowActive = ref(false);
 const cursorActive = ref(false);
 const eraserActive = ref(false);
+
+const openToolbar = ref(false);
 
 const colors = ref(["black", "green", "red", "blue"] as const);
 type Colors = (typeof colors.value)[number];
@@ -173,6 +215,8 @@ type Widths = (typeof widths.value)[number];
 const color = ref<Colors>("black");
 const widthBrush = ref<Widths>(2);
 const widthEraser = ref<Widths>(2);
+const widthLine = ref<Widths>(2);
+const widthArrow = ref<Widths>(2);
 
 const urlPlaceholder = ref(
   props.imgUrl ||
@@ -194,6 +238,9 @@ clickOutsideElement(lineContainer, () => {
 });
 clickOutsideElement(eraserContainer, () => {
   eraserActive.value = false;
+});
+clickOutsideElement(arrowContainer, () => {
+  arrowActive.value = false;
 });
 </script>
 
@@ -235,8 +282,21 @@ clickOutsideElement(eraserContainer, () => {
       }
 
       &__toolbar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+
         z-index: 6;
         width: fit-content;
+
+        &__openner {
+          width: fit-content;
+          height: fit-content;
+          border-radius: 50%;
+          padding: 0;
+        }
+
         &__wrapper {
           display: flex;
           flex-direction: row;

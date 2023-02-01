@@ -43,7 +43,9 @@ const props = defineProps<{
   brushWidth?: number;
   eraserWidth?: number;
   delete?: boolean;
-  choose: "brush" | "eraser" | "line" | "text" | "cursor";
+  lineWidth?: number;
+  arrowWidth?: number;
+  choose: "brush" | "eraser" | "line" | "text" | "cursor" | "arrow";
 }>();
 const emits = defineEmits(["update:delete"]);
 
@@ -72,6 +74,8 @@ const offsetY = ref(0);
 const color = computed(() => props.color || "black");
 const thiccBrush = computed(() => props.brushWidth || 2);
 const thiccEraser = computed(() => props.eraserWidth || 2);
+const thiccLine = computed(() => props.lineWidth || 2);
+const thiccArrow = computed(() => props.arrowWidth || 2);
 
 const dragging = ref(false);
 
@@ -84,7 +88,7 @@ const startY = ref(0);
 
 function onMouseDown(e: MouseEvent) {
   if (props.choose == "brush" || props.choose == "eraser") drawing.value = true;
-  if (props.choose == "line") {
+  if (props.choose == "line" || props.choose == "arrow") {
     ctx.value?.beginPath();
     line.value = true;
     startX.value = e.clientX - offsetX.value;
@@ -111,14 +115,49 @@ function onMouseUp(e: MouseEvent) {
   drawing.value = false;
   if (!ctx.value) return;
 
-  if (props.choose == "line" && line.value) {
+  if ((props.choose == "line" || props.choose == "arrow") && line.value) {
+    ctx.value.globalCompositeOperation = "source-over";
     line.value = false;
     ctx.value.strokeStyle = color.value;
-    ctx.value.lineWidth = thiccBrush.value;
+    ctx.value.lineWidth = thiccLine.value;
+    if (props.choose == "arrow") ctx.value.lineWidth = thiccArrow.value;
     ctx.value.lineCap = "round";
     ctx.value.moveTo(startX.value, startY.value);
     ctx.value.lineTo(e.clientX - offsetX.value, e.clientY - offsetY.value);
     ctx.value.stroke();
+    if (props.choose == "line") {
+      const vector = [
+        e.clientX - offsetX.value - startX.value,
+        e.clientY - offsetY.value - startY.value,
+      ];
+      const lenght = Math.hypot(...vector);
+      const normalize = vector.map((el) => el / lenght);
+      let rad = (Math.PI * 3) / 4;
+      let rotatedVector = [
+        normalize[0] * Math.cos(rad) - normalize[1] * Math.sin(rad),
+        normalize[0] * Math.sin(rad) + normalize[1] * Math.cos(rad),
+      ];
+      let endLine = rotatedVector.map((el) => el * 20);
+      ctx.value.moveTo(e.clientX - offsetX.value, e.clientY - offsetY.value);
+      ctx.value.lineTo(
+        e.clientX - offsetX.value + endLine[0],
+        e.clientY - offsetY.value + endLine[1]
+      );
+
+      rad = -(Math.PI * 3) / 4;
+      rotatedVector = [
+        normalize[0] * Math.cos(rad) - normalize[1] * Math.sin(rad),
+        normalize[0] * Math.sin(rad) + normalize[1] * Math.cos(rad),
+      ];
+      endLine = rotatedVector.map((el) => el * 20);
+
+      ctx.value.moveTo(e.clientX - offsetX.value, e.clientY - offsetY.value);
+      ctx.value.lineTo(
+        e.clientX - offsetX.value + endLine[0],
+        e.clientY - offsetY.value + endLine[1]
+      );
+      ctx.value.stroke();
+    }
   } else {
     ctx.value.stroke();
     ctx.value.beginPath();
@@ -141,7 +180,7 @@ function onMouseMove(e: MouseEvent) {
   }
   ctx.value.lineCap = "round";
   ctx.value.lineTo(e.clientX - offsetX.value, e.clientY - offsetY.value);
-  if (props.choose != "line") ctx.value.stroke();
+  if (props.choose != "line" && props.choose != "arrow") ctx.value.stroke();
 }
 
 const currentInput = ref<HTMLInputElement>();
@@ -248,6 +287,7 @@ onUnmounted(() => {
   height: v-bind(h);
   position: relative;
   .task__workspace__back {
+    border-radius: 20px;
     z-index: 1;
     border: 1px solid transparent;
     position: absolute;
@@ -256,6 +296,7 @@ onUnmounted(() => {
   }
 
   .task__workspace {
+    border-radius: 20px;
     z-index: 3;
     position: absolute;
     top: 0;
